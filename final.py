@@ -60,7 +60,14 @@ from imblearn.over_sampling import SMOTE
 import stats
 
 print("Libraries imported successfully.")
-np.random.seed(42)
+print("============setting seed============ ")
+jinran_seed = 19129592
+rundong_seed = 12243385
+kevin_seed = 14607450
+rng_seed = jinran_seed + rundong_seed + kevin_seed
+rng_seed = int(str(rng_seed), 16)
+print("seed set to: ", rng_seed)
+np.random.seed(rng_seed)
 # Q1
 num = pd.read_csv('rmpCapstoneNum.csv', header=None)
 qual = pd.read_csv('rmpCapstoneQual.csv', header=None)
@@ -331,13 +338,13 @@ scaler = StandardScaler()
 X_scaled_num = scaler.fit_transform(X_num)
 
 # Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X_scaled_num, y_num, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled_num, y_num, test_size=0.2, random_state=rng_seed)
 
 # Initialize models
 models = {
     'Linear Regression': LinearRegression(),
-    'Lasso': Lasso(random_state=42),
-    "Ridge": Ridge(random_state=42)
+    'Lasso': Lasso(random_state=rng_seed),
+    "Ridge": Ridge(random_state=rng_seed)
 }
 
 # Step 3: Fit and evaluate each model
@@ -385,7 +392,7 @@ print(evaluation_results_num)
 
 
 # Train the Ridge Regression model explicitly
-ridge_model = Ridge(random_state=42)
+ridge_model = Ridge(random_state=rng_seed)
 ridge_model.fit(X_train, y_train)
 
 # Extract coefficients (acts as feature importance in Ridge regression)
@@ -454,13 +461,13 @@ scaler = StandardScaler()
 X_scaled_tags = scaler.fit_transform(X_tags)
 
 # Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X_scaled_tags, y_tags, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled_tags, y_tags, test_size=0.2, random_state=rng_seed)
 
 # Initialize models
 models = {
     'Linear Regression': LinearRegression(),
-    'Lasso': Lasso(random_state=42),
-    "Ridge": Ridge(random_state=42)
+    'Lasso': Lasso(random_state=rng_seed),
+    "Ridge": Ridge(random_state=rng_seed)
 }
 
 # Step 3: Fit and evaluate each model
@@ -508,7 +515,7 @@ plt.show()
 print(evaluation_results)
 
 # Train the Ridge model explicitly
-ridge_model = Ridge(random_state=42)
+ridge_model = Ridge(random_state=rng_seed)
 ridge_model.fit(X_train, y_train)
 
 # Extract coefficients (acts as feature importance in Ridge regression)
@@ -637,7 +644,7 @@ X = merged_df[feature_columns]
 y = merged_df['Average Difficulty']
 
 # 2. Single train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rng_seed)
 
 # 3. Scale features (fit only on training data)
 scaler = StandardScaler()
@@ -649,12 +656,12 @@ ridge_params = {'alpha': np.logspace(-3, 4, 50)}
 lasso_params = {'alpha': np.logspace(-3, 4, 50)}
 
 # 5. Initialize models
-ridge = Ridge(random_state=42)
-lasso = Lasso(random_state=42)
+ridge = Ridge(random_state=rng_seed)
+lasso = Lasso(random_state=rng_seed)
 
 # 6. Initialize cross-validation for training data
 n_splits = 5
-kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+kf = KFold(n_splits=n_splits, shuffle=True, random_state=rng_seed)
 
 # 7. Train and evaluate models
 models = {
@@ -785,27 +792,27 @@ X = merged_df[x_cols]
 print(y.value_counts())
 
 # Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rng_seed)
 
 # Scale features and apply SMOTE
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-smote = SMOTE(random_state=42)
+smote = SMOTE(random_state=rng_seed)
 X_train_balanced, y_train_balanced = smote.fit_resample(X_train_scaled, y_train)
 
 # Define expanded set of models with parameter grids
 models = {
     'Logistic Regression': {
-        'model': LogisticRegression(random_state=42),
+        'model': LogisticRegression(random_state=rng_seed),
         'params': {
             'C': [0.001, 0.01, 0.1, 1, 10],
             'class_weight': ['balanced', None],
         }
     },
     'Random Forest': {
-        'model': RandomForestClassifier(random_state=42),
+        'model': RandomForestClassifier(random_state=rng_seed),
         'params': {
             'n_estimators': [100, 200],
             'max_depth': [10, 20, None],
@@ -814,7 +821,7 @@ models = {
         }
     },
     'XGBoost': {
-        'model': XGBClassifier(random_state=42),
+        'model': XGBClassifier(random_state=rng_seed),
         'params': {
             'n_estimators': [100, 200],
             'learning_rate': [0.01, 0.1],
@@ -829,7 +836,7 @@ models = {
 results = {}
 predictions = {}
 cv_results = {}  # New dictionary to store cross-validation results
-kf = KFold(n_splits=5, shuffle=True, random_state=42)  # Define KFold cross-validator
+kf = KFold(n_splits=5, shuffle=True, random_state=rng_seed)  # Define KFold cross-validator
 
 for name, model_info in models.items():
     print(f"\nTraining {name}...")
