@@ -60,7 +60,7 @@ from imblearn.over_sampling import SMOTE
 import stats
 
 print("Libraries imported successfully.")
-
+np.random.seed(42)
 # Q1
 num = pd.read_csv('rmpCapstoneNum.csv', header=None)
 qual = pd.read_csv('rmpCapstoneQual.csv', header=None)
@@ -336,8 +336,8 @@ X_train, X_test, y_train, y_test = train_test_split(X_scaled_num, y_num, test_si
 # Initialize models
 models = {
     'Linear Regression': LinearRegression(),
-    'Lasso': Lasso(),
-    "Ridge": Ridge()
+    'Lasso': Lasso(random_state=42),
+    "Ridge": Ridge(random_state=42)
 }
 
 # Step 3: Fit and evaluate each model
@@ -385,7 +385,7 @@ print(evaluation_results_num)
 
 
 # Train the Ridge Regression model explicitly
-ridge_model = Ridge()
+ridge_model = Ridge(random_state=42)
 ridge_model.fit(X_train, y_train)
 
 # Extract coefficients (acts as feature importance in Ridge regression)
@@ -459,8 +459,8 @@ X_train, X_test, y_train, y_test = train_test_split(X_scaled_tags, y_tags, test_
 # Initialize models
 models = {
     'Linear Regression': LinearRegression(),
-    'Lasso': Lasso(),
-    "Ridge": Ridge()
+    'Lasso': Lasso(random_state=42),
+    "Ridge": Ridge(random_state=42)
 }
 
 # Step 3: Fit and evaluate each model
@@ -508,7 +508,7 @@ plt.show()
 print(evaluation_results)
 
 # Train the Ridge model explicitly
-ridge_model = Ridge()
+ridge_model = Ridge(random_state=42)
 ridge_model.fit(X_train, y_train)
 
 # Extract coefficients (acts as feature importance in Ridge regression)
@@ -614,8 +614,7 @@ for tag_column in tags_columns:
 # create a list of normalized cols
 normalized_columns = [f'{tag_column}_normalized' for tag_column in tags_columns]
 
-import matplotlib.pyplot as plt
-import numpy as np
+
 
 # Calculate the correlation matrix
 correlation_matrix = merged_df[normalized_columns].corr()
@@ -671,7 +670,7 @@ for name, (model, params) in models.items():
         params, 
         cv=kf, 
         scoring='neg_mean_squared_error',
-        n_jobs=-1
+        n_jobs=-1,
     )
     
     # Fit on training data
@@ -716,7 +715,6 @@ for model_name, result in results.items():
     print(result['Best_Params'])
 
     # create a visualization of the results
-import matplotlib.pyplot as plt
 
 # Extract RMSE and R2 values
 rmse_values = results_df['Test_RMSE']
@@ -842,7 +840,7 @@ for name, model_info in models.items():
         model_info['params'],
         cv=5,
         scoring='roc_auc',
-        n_jobs=-1
+        n_jobs=-1,
     )
     
     # Fit
