@@ -35,6 +35,7 @@ from sklearn.metrics import (
     recall_score,
     accuracy_score
 )
+from scipy.stats import levene
 
 # Machine Learning Models
 from sklearn.linear_model import (
@@ -141,9 +142,127 @@ print(f"t-statistic for Q1: {t_stat:.4f}")
 print(f"p-value Q1: {p_value:.4f}")
 
 # Q2
+print("============Q2============")
+# Reloading numerical dataset for problem 7
+num_data_path = 'rmpCapstoneNum.csv'
+num_data = pd.read_csv(num_data_path)
+
+# Renaming columns
+num_data.columns = [
+    'Average Rating', 'Average Difficulty', 'Number of Ratings',
+    'Received Pepper', 'Proportion Retake', 'Ratings Online',
+    'Male Gender', 'Female Gender'
+]
+
+# Step 1: Calculate the mean of 'Number of Ratings'
+mean_num_ratings = num_data['Number of Ratings'].mean()
+
+# Step 2: Drop rows where 'Number of Ratings' is less than the mean
+num_data_filtered = num_data[num_data['Number of Ratings'] >= mean_num_ratings]
+ratings_cleaned = num_data_filtered.dropna(subset=['Average Rating', 'Male Gender', 'Female Gender'])
+
+# Step 2: Separate ratings by gender
+male_ratings = ratings_cleaned['Average Rating'][ratings_cleaned['Male Gender'] == 1]
+female_ratings = ratings_cleaned['Average Rating'][ratings_cleaned['Female Gender'] == 1]
+
+# Step 3: Calculate variance for each group
+male_variance = np.var(male_ratings, ddof=1)  # Sample variance
+female_variance = np.var(female_ratings, ddof=1)
+
+# Step 4: Perform Levene's test for equality of variances
+stat, p_value = levene(male_ratings, female_ratings)
+
+# Step 5: Output results
+print("Male Variance:", male_variance)
+print("Female Variance:", female_variance)
+print("Levene's Test Statistic:", stat)
+print("p-value:", p_value)
+
+# Step 6: Interpret results
+if p_value < 0.05:
+    print("The variances are significantly different (p < 0.05).")
+else:
+    print("The variances are not significantly different (p >= 0.05).")
+
+
+plt.figure(figsize=(10, 6))
+plt.hist(male_ratings, bins=20, alpha=0.5, label='Male Ratings', color='blue')
+plt.hist(female_ratings, bins=20, alpha=0.5, label='Female Ratings', color='red')
+plt.title('Distribution of Average Ratings by Gender')
+plt.xlabel('Average Rating')
+plt.ylabel('Frequency')
+plt.legend()
+plt.show()
 
 # Q3
+print('============Q3============')
+num_data_path = 'rmpCapstoneNum.csv'
+num_data = pd.read_csv(num_data_path)
 
+# Renaming columns for clarity
+num_data.columns = [
+    'Average Rating', 'Average Difficulty', 'Number of Ratings',
+    'Received Pepper', 'Proportion Retake', 'Ratings Online',
+    'Male Gender', 'Female Gender'
+]
+
+# Step 1: Drop rows where the target ('Average Rating') is missing
+num_data_cleaned = num_data.dropna(subset=['Average Rating'])
+
+# Step 2: Filter rows where 'Number of Ratings' is below the mean
+mean_num_ratings = num_data_cleaned['Number of Ratings'].mean()
+num_data_filtered = num_data_cleaned[num_data_cleaned['Number of Ratings'] >= mean_num_ratings]
+
+# Step 3: Drop rows with missing values in predictor variables used for gender analysis
+ratings_cleaned = num_data_filtered.dropna(subset=['Male Gender', 'Female Gender'])
+
+# Step 4: Separate ratings by gender for analysis
+male_ratings = ratings_cleaned['Average Rating'][ratings_cleaned['Male Gender'] == 1]
+female_ratings = ratings_cleaned['Average Rating'][ratings_cleaned['Female Gender'] == 1]
+
+# Output cleaned data statistics
+print(f"Total rows after cleaning: {ratings_cleaned.shape[0]}")
+print(f"Male ratings count: {male_ratings.shape[0]}")
+print(f"Female ratings count: {female_ratings.shape[0]}")
+
+# Bootstrap parameters
+n_bootstrap = 1000  # Number of bootstrap samples
+
+# Arrays to store bootstrap statistics
+mean_differences = []
+variance_differences = []
+cohens_d_values = []
+
+# Original statistics
+original_male_ratings = male_ratings.values
+original_female_ratings = female_ratings.values
+
+for _ in range(n_bootstrap):
+    # Resample with replacement
+    male_sample = np.random.choice(original_male_ratings, size=len(original_male_ratings), replace=True)
+    female_sample = np.random.choice(original_female_ratings, size=len(original_female_ratings), replace=True)
+
+    # Mean difference
+    mean_differences.append(np.mean(male_sample) - np.mean(female_sample))
+
+    # Variance difference
+    variance_differences.append(np.var(male_sample, ddof=1) - np.var(female_sample, ddof=1))
+
+    # Cohen's d
+    pooled_std = np.sqrt(((len(male_sample) - 1) * np.var(male_sample, ddof=1) +
+                          (len(female_sample) - 1) * np.var(female_sample, ddof=1)) /
+                          (len(male_sample) + len(female_sample) - 2))
+    cohens_d_values.append((np.mean(male_sample) - np.mean(female_sample)) / pooled_std)
+
+# Confidence intervals
+mean_diff_ci = np.percentile(mean_differences, [2.5, 97.5])
+variance_diff_ci = np.percentile(variance_differences, [2.5, 97.5])
+cohens_d_ci = np.percentile(cohens_d_values, [2.5, 97.5])
+
+# Output results
+print(f"Mean Difference CI: {mean_diff_ci}")
+print(f"Variance Difference CI: {variance_diff_ci}")
+print(f"Cohen's d CI: {cohens_d_ci}")
 # Q4
 # For each tag column
 for tag_column in tags_columns:
@@ -259,6 +378,18 @@ print("p_value: ", p_value)
 
 print('============Q6============')
 
+
+# Reloading numerical dataset for problem 6
+num_data_path = 'prmpCapstoneNum.csv'
+num_data = pd.read_csv(num_data_path)
+
+# Renaming columns
+num_data.columns = [
+    'Average Rating', 'Average Difficulty', 'Number of Ratings',
+    'Received Pepper', 'Proportion Retake', 'Ratings Online',
+    'Male Gender', 'Female Gender'
+]
+
 # Step 1: Calculate the mean of 'Number of Ratings'
 mean_num_ratings = num_data['Number of Ratings'].mean()
 
@@ -266,47 +397,59 @@ mean_num_ratings = num_data['Number of Ratings'].mean()
 num_data_filtered = num_data[num_data['Number of Ratings'] >= mean_num_ratings]
 
 # Step 3: Clean data by dropping rows with NaN in relevant columns
-ratings_cleaned = num_data_filtered.dropna(subset=['Average Rating', 'Male Gender', 'Female Gender'])
+num_data_cleaned = num_data_filtered.dropna(subset=['Average Rating'])
 
 # Step 4: Split data by gender
-average_rating = ratings_cleaned['Average Rating']
-male_ratings = average_rating[ratings_cleaned['Male Gender'] == 1]
-female_ratings = average_rating[ratings_cleaned['Female Gender'] == 1]
+male_ratings = num_data_cleaned['Average Rating'][num_data_cleaned['Male Gender'] == 1]
+female_ratings = num_data_cleaned['Average Rating'][num_data_cleaned['Female Gender'] == 1]
 
-# Step 5: Calculate means and standard deviations
-male_mean_rating = np.mean(male_ratings)
-female_mean_rating = np.mean(female_ratings)
-mean_difference = male_mean_rating - female_mean_rating
+# Step 5: Bootstrapping setup
+n_iterations = 1000  # Number of bootstrap iterations
+bootstrap_d = []
 
-male_std_rating = np.std(male_ratings, ddof=1)
-female_std_rating = np.std(female_ratings, ddof=1)
-n_male = len(male_ratings)
-n_female = len(female_ratings)
+# Combine the male and female ratings into one dataset
+combined_ratings = np.concatenate([male_ratings, female_ratings])
 
-# Step 6: Calculate pooled standard deviation
-pooled_std = np.sqrt(
-    ((n_male - 1) * male_std_rating**2 + (n_female - 1) * female_std_rating**2) / (n_male + n_female - 2)
-)
+# Observed mean difference
+observed_difference = np.mean(male_ratings) - np.mean(female_ratings)
 
-# Step 7: Calculate Cohen's d
-cohens_d = mean_difference / pooled_std
+# Combined standard deviation (as a normalization factor)
+combined_std = np.std(combined_ratings, ddof=1)
 
-# Step 8: Calculate standard error of Cohen's d
-se_d = np.sqrt((n_male + n_female) / (n_male * n_female) + cohens_d**2 / (2 * (n_male + n_female)))
+for _ in range(n_iterations):
+    # Permute the combined dataset
+    permuted_ratings = np.random.permutation(combined_ratings)
 
-# Step 9: Calculate 95% confidence interval for Cohen's d
-z_critical = norm.ppf(0.975)  # 95% confidence
-ci_lower = cohens_d - z_critical * se_d
-ci_upper = cohens_d + z_critical * se_d
+    # Split the permuted data into two groups
+    permuted_male = permuted_ratings[:len(male_ratings)]
+    permuted_female = permuted_ratings[len(male_ratings):]
+
+    # Calculate the mean difference for the permuted samples
+    permuted_difference = np.mean(permuted_male) - np.mean(permuted_female)
+
+    # Normalize the mean difference using the combined standard deviation
+    bootstrap_d.append(permuted_difference / combined_std)
+
+# Step 6: Calculate confidence interval for Cohen's d
+ci_lower = np.percentile(bootstrap_d, 2.5)
+ci_upper = np.percentile(bootstrap_d, 97.5)
+mean_d = np.mean(bootstrap_d)
 
 # Output results
-print("Male Mean Rating:", male_mean_rating)
-print("Female Mean Rating:", female_mean_rating)
-print("Mean Difference:", mean_difference)
-print("Pooled Standard Deviation:", pooled_std)
-print("Cohen's d:", cohens_d)
-print("Standard Error of Cohen's d:", se_d)
+print("Observed Mean Difference:", observed_difference)
+print("Bootstrap Mean Cohen's d:", mean_d)
 print("95% Confidence Interval for Cohen's d: [{}, {}]".format(ci_lower, ci_upper))
+
+# Optional: Plotting the bootstrap distribution
+plt.hist(bootstrap_d, bins=30, color='skyblue', edgecolor='black', alpha=0.7)
+plt.title("Bootstrap Distribution of Cohen's d (Alternative Method)")
+plt.xlabel("Cohen's d")
+plt.ylabel("Frequency")
+plt.axvline(ci_lower, color='red', linestyle='dashed', label='Lower 95% CI')
+plt.axvline(ci_upper, color='green', linestyle='dashed', label='Upper 95% CI')
+plt.legend()
+plt.show()
+
 
 print('============Q7============')
 
